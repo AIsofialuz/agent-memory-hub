@@ -1,7 +1,7 @@
 # agent-memory-hub
 
 **Category:** Memory & Context  
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Type:** MCP Server
 
 > Give any AI agent true long-term memory. Store facts, preferences, project details, and notes. Retrieve them with intelligent search. Never start from scratch again.
@@ -31,7 +31,7 @@ Think of it as a second brain for your agent — one that actually remembers who
 
 ## Tools Reference
 
-### `store_memory(key, content, tags?, importance?)`
+### `store_memory(key, content, tags?, importance?, overwrite?)`
 Store any fact, preference, or note. Tags and importance are auto-detected.
 
 **Good keys:** `user_name`, `preferred_stack`, `project_deadline`, `api_key_note`, `client_requirement_1`
@@ -40,6 +40,13 @@ Store any fact, preference, or note. Tags and importance are auto-detected.
 store_memory("user_preferred_editor", "User uses VS Code with Vim keybindings")
 → Auto-tags: ["preference", "technical"]
 → Auto-importance: 6/10
+```
+
+Set `overwrite: true` for upsert behavior — creates the memory if new, updates it silently if the key already exists. No need to check first.
+
+```
+store_memory("user_preferred_editor", "User switched to Cursor", overwrite=true)
+→ Updates existing memory in place
 ```
 
 ---
