@@ -59,6 +59,23 @@ export class MemoryStore {
     return memory;
   }
 
+  upsert(partial: Omit<Memory, 'id' | 'createdAt' | 'updatedAt' | 'accessCount' | 'lastAccessed'>): { memory: Memory; created: boolean } {
+    const existing = this.byKey(partial.key);
+    if (existing) {
+      const updated = this.update(partial.key, {
+        content: partial.content,
+        tags: partial.tags,
+        importance: partial.importance,
+      })!;
+      return { memory: updated, created: false };
+    }
+    const now = new Date().toISOString();
+    const memory: Memory = { ...partial, id: randomUUID(), createdAt: now, updatedAt: now, accessCount: 0, lastAccessed: now };
+    this.data.memories.push(memory);
+    this.persist();
+    return { memory, created: true };
+  }
+
   update(key: string, updates: Partial<Pick<Memory, 'content' | 'tags' | 'importance'>>): Memory | null {
     const idx = this.data.memories.findIndex(m => m.key === key);
     if (idx === -1) return null;

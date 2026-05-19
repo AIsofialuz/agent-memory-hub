@@ -14,7 +14,7 @@ import type { Memory } from './types.js';
 const store = new MemoryStore();
 
 const server = new Server(
-  { name: 'agent-memory-hub', version: '1.0.0' },
+  { name: 'agent-memory-hub', version: '1.1.0' },
   { capabilities: { tools: {} } }
 );
 
@@ -46,6 +46,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           importance: {
             type: 'number',
             description: 'Importance score 1-10 — higher = retrieved first (auto-scored if omitted)',
+          },
+          overwrite: {
+            type: 'boolean',
+            description: 'If true and the key already exists, update it in place instead of returning an error (upsert behavior). Default: false.',
           },
         },
         required: ['key', 'content'],
@@ -166,8 +170,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         const provided = Array.isArray(a['tags']) ? (a['tags'] as string[]) : [];
         const importance = a['importance'] !== undefined ? Number(a['importance']) : undefined;
+        const overwrite = a['overwrite'] === true;
         const tags = autoTags(content, provided);
         const imp = autoImportance(content, importance);
+
+        if (overwrite) {
+          const { memory, created } = store.upsert({ key, content, tags, importance: imp });
+          const action = created ? 'stored' : 'updated';
+          return ok(
+            `Memory ${action} (upsert).\n` +
+            `  Key:        ${memory.key}\n` +
+            `  Importance: ${memory.importance}/10\n` +
+            `  Tags:       ${memory.tags.length ? memory.tags.join(', ') : '(none)'}\n` +
+            `  ID:         ${memory.id}`
+          );
+        }
 
         const memory = store.add({ key, content, tags, importance: imp });
         return ok(

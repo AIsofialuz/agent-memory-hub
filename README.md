@@ -82,7 +82,10 @@ key:        "user_preferred_language"
 content:    "User always prefers TypeScript over JavaScript"
 tags:       ["preference", "technical"]   ← auto-detected if omitted
 importance: 7                             ← auto-scored if omitted
+overwrite:  true                          ← upsert: update if key exists, create if not
 ```
+
+By default, storing a key that already exists returns an error. Set `overwrite: true` to silently update the existing memory instead — useful when you want "set this value" semantics without checking first.
 
 ### `search_memory`
 
